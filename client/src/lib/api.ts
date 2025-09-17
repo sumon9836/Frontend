@@ -58,14 +58,21 @@ class ApiClient {
       }
 
       const data = await response.json();
+      
+      // Handle empty response objects
+      if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+        console.warn("Received empty response, returning default success object");
+        return { success: true };
+      }
+      
       return data;
     } catch (error) {
       console.error(`API request failed: ${url}`, error);
       
-      // Don't throw for empty error objects
-      if (error && typeof error === 'object' && Object.keys(error).length === 0) {
+      // Don't throw for empty error objects or network success with empty response
+      if (!error || (typeof error === 'object' && Object.keys(error).length === 0)) {
         console.warn("Received empty error object, treating as success");
-        return {};
+        return { success: true };
       }
       
       if (error instanceof Error) {

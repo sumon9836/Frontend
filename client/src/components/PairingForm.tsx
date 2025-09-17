@@ -55,6 +55,12 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
       const data = await response.json();
       console.log("Pairing response:", data);
       
+      // Check if we got a valid response with either code or error
+      if (!data || (typeof data === 'object' && Object.keys(data).length === 0)) {
+        console.warn("Received empty response object, treating as success");
+        return; // Exit silently for empty responses
+      }
+      
       if (data.error) {
         // Handle ban or other errors
         if (data.error.includes("ban")) {
@@ -103,17 +109,20 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
     } catch (error) {
       console.error("Pairing error:", error);
       
-      // Skip showing toast for empty error objects
-      if (error && typeof error === 'object' && Object.keys(error).length === 0) {
-        console.warn("Received empty error object, skipping error display");
+      // Skip showing toast for empty error objects or undefined errors
+      if (!error || (typeof error === 'object' && Object.keys(error).length === 0)) {
+        console.warn("Received empty or undefined error, skipping error display");
         return;
       }
       
-      toast({
-        title: "Request Failed",
-        description: error instanceof Error ? error.message : "Failed to connect to pairing service. Please try again.",
-        variant: "destructive",
-      });
+      // Only show error toast for real errors
+      if (error instanceof Error && error.message) {
+        toast({
+          title: "Request Failed",
+          description: error.message,
+          variant: "destructive",
+        });
+      }
     }
   };
 
