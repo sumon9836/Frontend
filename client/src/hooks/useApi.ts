@@ -79,12 +79,13 @@ export function usePairNumber() {
       queryClient.invalidateQueries({ queryKey: ["sessions"] });
     },
     onError: (error) => {
-      toast({
-        title: "Connection Error",
-        description: "Failed to connect to pairing service. Please try again.",
-        variant: "destructive",
-      });
+      // Don't show toast for empty error objects
+      if (!error || (typeof error === 'object' && Object.keys(error).length === 0)) {
+        console.warn("Received empty error object in usePairNumber, skipping error display");
+        return;
+      }
       console.error("Pairing error:", error);
+      // Error handling is now done in PairingForm component
     },
   });
 }
