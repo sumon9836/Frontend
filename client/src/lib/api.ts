@@ -61,6 +61,13 @@ class ApiClient {
       return data;
     } catch (error) {
       console.error(`API request failed: ${url}`, error);
+      
+      // Don't throw for empty error objects
+      if (error && typeof error === 'object' && Object.keys(error).length === 0) {
+        console.warn("Received empty error object, treating as success");
+        return {};
+      }
+      
       if (error instanceof Error) {
         throw error;
       }

@@ -102,6 +102,13 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
       
     } catch (error) {
       console.error("Pairing error:", error);
+      
+      // Skip showing toast for empty error objects
+      if (error && typeof error === 'object' && Object.keys(error).length === 0) {
+        console.warn("Received empty error object, skipping error display");
+        return;
+      }
+      
       toast({
         title: "Request Failed",
         description: error instanceof Error ? error.message : "Failed to connect to pairing service. Please try again.",
