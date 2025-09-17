@@ -3,11 +3,12 @@ import BlockedUsersList from "@/components/BlockedUsersList";
 import UserManagement from "@/components/UserManagement";
 import ThemeToggle from "@/components/ThemeToggle";
 import ApiStatus from "@/components/ApiStatus";
+import ApiConnectionGuide from "@/components/ApiConnectionGuide";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, Settings, ArrowLeft, Activity, Ban, Loader2 } from "lucide-react";
+import { Shield, Users, Settings, ArrowLeft, Activity, Ban, Loader2, Link as LinkIcon } from "lucide-react";
 import { Link } from "wouter";
 import { useSessions, useBlocklist, useDeleteSession, useBlockUser, useUnblockUser } from "@/hooks/useApi";
 
@@ -76,7 +77,7 @@ export default function AdminPanel() {
         </div>
         
         <Tabs defaultValue="sessions" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="sessions" data-testid="tab-sessions">
               <Users className="w-4 h-4 mr-2" />
               Sessions ({totalSessions})
@@ -88,6 +89,10 @@ export default function AdminPanel() {
             <TabsTrigger value="manage" data-testid="tab-manage">
               <Settings className="w-4 h-4 mr-2" />
               User Management
+            </TabsTrigger>
+            <TabsTrigger value="api" data-testid="tab-api">
+              <LinkIcon className="w-4 h-4 mr-2" />
+              API
             </TabsTrigger>
           </TabsList>
 
@@ -200,6 +205,11 @@ export default function AdminPanel() {
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          {/* API Connection Guide */}
+          <TabsContent value="api" className="space-y-6">
+            <ApiConnectionGuide />
           </TabsContent>
         </Tabs>
       </div>

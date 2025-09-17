@@ -44,7 +44,7 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
     console.log("Pairing request for:", cleanNumber);
     onPair?.(cleanNumber);
     
-    // Real API call handled by parent component
+    // Real API call handled by parent component via hooks
   };
 
   const copyToClipboard = () => {

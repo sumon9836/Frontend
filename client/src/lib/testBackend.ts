@@ -1,9 +1,9 @@
 import { apiClient } from "./api";
 
-// Test function to verify backend connectivity
+// Test function to verify backend connectivity  
 export const testBackendConnection = async () => {
   console.log("🔍 Testing backend API connection...");
-  console.log("Backend URL:", "http://interchange.proxy.rlwy.net:24084");
+  console.log("Backend URL:", "Via proxy to http://interchange.proxy.rlwy.net:24084");
 
   const tests = [
     {

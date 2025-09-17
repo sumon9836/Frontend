@@ -1,4 +1,5 @@
-const API_BASE_URL = "http://interchange.proxy.rlwy.net:24084";
+// Use our proxy server to avoid CORS issues
+const API_BASE_URL = "/api";
 
 export interface PairResponse {
   number: string;
