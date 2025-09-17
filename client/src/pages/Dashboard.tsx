@@ -7,8 +7,8 @@ import ApiStatus from "@/components/ApiStatus";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Users, Shield, Settings, RefreshCw, Loader2, Sparkles, Zap } from "lucide-react";
-import { Link } from "wouter";
+import { Bot, Users, Shield, RefreshCw, Loader2, Sparkles, Zap } from "lucide-react";
+
 import { useSessions, useBlocklist, usePairNumber } from "@/hooks/useApi";
 import { useEffect, useState } from "react";
 
@@ -72,17 +72,6 @@ export default function Dashboard() {
                 <RefreshCw className={`w-4 h-4 mr-2 ${sessionsLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
-              
-              <Link href="/admin">
-                <Button 
-                  variant="outline" 
-                  data-testid="link-admin"
-                  className="glass-effect hover-lift border-white/20 text-white hover:bg-white/10 transition-all duration-300"
-                >
-                  <Settings className="w-4 h-4 mr-2" />
-                  Admin Panel
-                </Button>
-              </Link>
               
               <ThemeToggle />
             </div>
