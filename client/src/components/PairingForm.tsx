@@ -47,7 +47,13 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
     try {
       // Call the API directly to get the response
       const response = await fetch(`/api/pair?number=${cleanNumber}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const data = await response.json();
+      console.log("Pairing response:", data);
       
       if (data.error) {
         // Handle ban or other errors
@@ -74,12 +80,20 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
           title: "Pairing Code Generated!",
           description: `Your pairing code is: ${data.code}`,
         });
-      } else if (data.status) {
+      } else if (data.status && data.status === "already paired") {
         // Already registered
         setPairingStatus("already_paired");
         toast({
           title: "Already Paired",
           description: `Number ${data.number} is already registered and paired`,
+        });
+      } else {
+        // Unexpected response format
+        console.warn("Unexpected API response format:", data);
+        toast({
+          title: "Unexpected Response",
+          description: "The server returned an unexpected response format.",
+          variant: "destructive",
         });
       }
       
@@ -89,8 +103,8 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
     } catch (error) {
       console.error("Pairing error:", error);
       toast({
-        title: "Connection Error",
-        description: "Failed to connect to pairing service. Please try again.",
+        title: "Request Failed",
+        description: error instanceof Error ? error.message : "Failed to connect to pairing service. Please try again.",
         variant: "destructive",
       });
     }

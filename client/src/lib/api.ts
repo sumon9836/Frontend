@@ -47,13 +47,23 @@ class ApiClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        let errorMessage = `HTTP ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorData.error || response.statusText;
+        } catch {
+          errorMessage = response.statusText || `HTTP ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
       return data;
     } catch (error) {
       console.error(`API request failed: ${url}`, error);
+      if (error instanceof Error) {
+        throw error;
+      }
       throw new Error(`Network error: Unable to connect to API server`);
     }
   }
