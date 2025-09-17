@@ -44,16 +44,7 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
     console.log("Pairing request for:", cleanNumber);
     onPair?.(cleanNumber);
     
-    // Mock pairing code generation for demo
-    setTimeout(() => {
-      const mockCode = Math.random().toString(36).substring(2, 8).toUpperCase();
-      setPairingCode(mockCode);
-      setIsCodeGenerated(true);
-      toast({
-        title: "Pairing Code Generated",
-        description: "Enter this code in your WhatsApp settings",
-      });
-    }, 1500);
+    // Real API call handled by parent component
   };
 
   const copyToClipboard = () => {

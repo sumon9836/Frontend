@@ -7,6 +7,8 @@ import Dashboard from "@/pages/Dashboard";
 import AdminPanel from "@/pages/AdminPanel";
 import BannedUserPage from "@/pages/BannedUserPage";
 import NotFound from "@/pages/not-found";
+// Import test backend for development
+import "./lib/testBackend";
 
 function Router() {
   return (

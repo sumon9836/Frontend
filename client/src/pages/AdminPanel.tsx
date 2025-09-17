@@ -1,103 +1,34 @@
-import { useState } from "react";
 import SessionCard from "@/components/SessionCard";
 import BlockedUsersList from "@/components/BlockedUsersList";
 import UserManagement from "@/components/UserManagement";
 import ThemeToggle from "@/components/ThemeToggle";
+import ApiStatus from "@/components/ApiStatus";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Shield, Users, Settings, ArrowLeft, Activity, Ban } from "lucide-react";
+import { Shield, Users, Settings, ArrowLeft, Activity, Ban, Loader2 } from "lucide-react";
 import { Link } from "wouter";
-import { useToast } from "@/hooks/use-toast";
-import type { Session, BlockedUser } from "@shared/schema";
+import { useSessions, useBlocklist, useDeleteSession, useBlockUser, useUnblockUser } from "@/hooks/useApi";
 
 export default function AdminPanel() {
-  const { toast } = useToast();
-  
-  // TODO: remove mock functionality - replace with real API calls
-  const [sessions, setSessions] = useState<Session[]>([
-    {
-      id: "1",
-      phoneNumber: "919876543210",
-      status: "connected", 
-      pairingCode: null,
-      lastSeen: new Date(Date.now() - 1000 * 60 * 30), // 30 minutes ago
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
-    },
-    {
-      id: "2",
-      phoneNumber: "911234567890",
-      status: "pairing",
-      pairingCode: "ABC123", 
-      lastSeen: null,
-      createdAt: new Date(),
-    },
-    {
-      id: "3",
-      phoneNumber: "918765432109",
-      status: "disconnected",
-      pairingCode: null,
-      lastSeen: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-      createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 1 week ago
-    },
-  ]);
-
-  const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([
-    {
-      id: "1",
-      phoneNumber: "919999999999",
-      blockedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
-      reason: "Spam messages and abuse",
-    },
-    {
-      id: "2", 
-      phoneNumber: "918888888888",
-      blockedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 1 week ago
-      reason: "Violation of terms of service",
-    },
-  ]);
+  // Use real API hooks
+  const { data: sessions = [], isLoading: sessionsLoading } = useSessions();
+  const { data: blockedUsers = [], isLoading: blocklistLoading } = useBlocklist();
+  const deleteSessionMutation = useDeleteSession();
+  const blockUserMutation = useBlockUser();
+  const unblockUserMutation = useUnblockUser();
 
   const handleDeleteSession = (phoneNumber: string) => {
-    console.log("Delete session:", phoneNumber);
-    // TODO: remove mock functionality - call real API
-    setSessions(prev => prev.filter(s => s.phoneNumber !== phoneNumber));
-    toast({
-      title: "Session Deleted",
-      description: `Session for ${phoneNumber} has been removed`,
-      variant: "destructive",
-    });
+    deleteSessionMutation.mutate(phoneNumber);
   };
 
   const handleBlockUser = (phoneNumber: string, reason?: string) => {
-    console.log("Block user:", phoneNumber, reason);
-    // TODO: remove mock functionality - call real API
-    const newBlockedUser: BlockedUser = {
-      id: Date.now().toString(),
-      phoneNumber,
-      blockedAt: new Date(),
-      reason: reason || null,
-    };
-    setBlockedUsers(prev => [...prev, newBlockedUser]);
-    
-    // Remove from active sessions
-    setSessions(prev => prev.filter(s => s.phoneNumber !== phoneNumber));
-    
-    toast({
-      title: "User Blocked",
-      description: `${phoneNumber} has been blocked`,
-      variant: "destructive",
-    });
+    blockUserMutation.mutate(phoneNumber);
   };
 
   const handleUnblockUser = (phoneNumber: string) => {
-    console.log("Unblock user:", phoneNumber);
-    // TODO: remove mock functionality - call real API
-    setBlockedUsers(prev => prev.filter(u => u.phoneNumber !== phoneNumber));
-    toast({
-      title: "User Unblocked", 
-      description: `${phoneNumber} has been unblocked`,
-    });
+    unblockUserMutation.mutate(phoneNumber);
   };
 
   const connectedCount = sessions.filter(s => s.status === "connected").length;
@@ -140,6 +71,10 @@ export default function AdminPanel() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        <div className="mb-6">
+          <ApiStatus />
+        </div>
+        
         <Tabs defaultValue="sessions" className="space-y-6">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="sessions" data-testid="tab-sessions">
@@ -166,7 +101,15 @@ export default function AdminPanel() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {sessions.length === 0 ? (
+                {sessionsLoading ? (
+                  <div className="text-center py-8">
+                    <Loader2 className="w-12 h-12 text-muted-foreground mx-auto mb-4 animate-spin" />
+                    <CardTitle className="text-lg mb-2">Loading Sessions...</CardTitle>
+                    <CardDescription>
+                      Fetching active sessions from server
+                    </CardDescription>
+                  </div>
+                ) : sessions.length === 0 ? (
                   <div className="text-center py-8">
                     <Users className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                     <CardTitle className="text-lg mb-2">No Active Sessions</CardTitle>
@@ -192,11 +135,23 @@ export default function AdminPanel() {
 
           {/* Blocked Users Management */}
           <TabsContent value="blocked" className="space-y-6">
-            <BlockedUsersList
-              blockedUsers={blockedUsers}
-              onUnblock={handleUnblockUser}
-              isAdmin={true}
-            />
+            {blocklistLoading ? (
+              <Card>
+                <CardContent className="text-center py-8">
+                  <Loader2 className="w-12 h-12 text-muted-foreground mx-auto mb-4 animate-spin" />
+                  <CardTitle className="text-lg mb-2">Loading Blocked Users...</CardTitle>
+                  <CardDescription>
+                    Fetching blocked users list from server
+                  </CardDescription>
+                </CardContent>
+              </Card>
+            ) : (
+              <BlockedUsersList
+                blockedUsers={blockedUsers}
+                onUnblock={handleUnblockUser}
+                isAdmin={true}
+              />
+            )}
           </TabsContent>
 
           {/* User Management */}
