@@ -49,30 +49,39 @@ export function usePairNumber() {
   return useMutation({
     mutationFn: apiClient.pairNumber,
     onSuccess: (data) => {
+      // Handle different response types
       if (data.error) {
-        toast({
-          title: "Pairing Failed",
-          description: data.error,
-          variant: "destructive",
-        });
+        if (data.error.includes("ban")) {
+          toast({
+            title: "Account Banned",
+            description: `User ${data.number} is banned from using this service`,
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Pairing Failed",
+            description: data.error,
+            variant: "destructive",
+          });
+        }
       } else if (data.code) {
         toast({
-          title: "Pairing Code Generated",
+          title: "Pairing Code Generated!",
           description: `Your pairing code is: ${data.code}`,
         });
       } else if (data.status) {
         toast({
-          title: "Already Paired",
-          description: `Number ${data.number} is already paired`,
+          title: "Already Registered",
+          description: `Number ${data.number} is already paired and registered`,
         });
       }
-      // Refresh sessions data
+      // Refresh sessions data after any pairing attempt
       queryClient.invalidateQueries({ queryKey: ["sessions"] });
     },
     onError: (error) => {
       toast({
-        title: "Pairing Failed",
-        description: "Failed to generate pairing code. Please try again.",
+        title: "Connection Error",
+        description: "Failed to connect to pairing service. Please try again.",
         variant: "destructive",
       });
       console.error("Pairing error:", error);

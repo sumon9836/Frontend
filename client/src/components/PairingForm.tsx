@@ -15,6 +15,7 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
   const [phoneNumber, setPhoneNumber] = useState("");
   const [pairingCode, setPairingCode] = useState("");
   const [isCodeGenerated, setIsCodeGenerated] = useState(false);
+  const [pairingStatus, setPairingStatus] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -42,9 +43,57 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
     }
 
     console.log("Pairing request for:", cleanNumber);
-    onPair?.(cleanNumber);
     
-    // Real API call handled by parent component via hooks
+    try {
+      // Call the API directly to get the response
+      const response = await fetch(`/api/pair?number=${cleanNumber}`);
+      const data = await response.json();
+      
+      if (data.error) {
+        // Handle ban or other errors
+        if (data.error.includes("ban")) {
+          toast({
+            title: "Account Banned",
+            description: `User ${cleanNumber} is banned from using this service`,
+            variant: "destructive",
+          });
+          setPairingStatus("banned");
+        } else {
+          toast({
+            title: "Pairing Failed",
+            description: data.error,
+            variant: "destructive",
+          });
+        }
+      } else if (data.code) {
+        // Successfully generated pairing code
+        setPairingCode(data.code);
+        setIsCodeGenerated(true);
+        setPairingStatus("code_generated");
+        toast({
+          title: "Pairing Code Generated!",
+          description: `Your pairing code is: ${data.code}`,
+        });
+      } else if (data.status) {
+        // Already registered
+        setPairingStatus("already_paired");
+        toast({
+          title: "Already Paired",
+          description: `Number ${data.number} is already registered and paired`,
+        });
+      }
+      
+      // Also call the parent handler
+      onPair?.(cleanNumber);
+      
+    } catch (error) {
+      console.error("Pairing error:", error);
+      toast({
+        title: "Connection Error",
+        description: "Failed to connect to pairing service. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const copyToClipboard = () => {
@@ -91,7 +140,53 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
             />
           </div>
           
-          {!isCodeGenerated ? (
+          {pairingStatus === "banned" ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-center space-x-2 text-red-600">
+                <span className="text-sm font-medium">❌ Account Banned</span>
+              </div>
+              <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center">
+                <p className="text-sm text-red-800">
+                  Your number has been banned from using this service.
+                  Please contact the administrator for assistance.
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  setPairingStatus(null);
+                  setPhoneNumber("");
+                }}
+                data-testid="button-try-different"
+              >
+                Try Different Number
+              </Button>
+            </div>
+          ) : pairingStatus === "already_paired" ? (
+            <div className="space-y-3">
+              <div className="flex items-center justify-center space-x-2 text-green-600">
+                <CheckCircle className="w-5 h-5" />
+                <span className="text-sm font-medium">Already Registered</span>
+              </div>
+              <div className="p-4 bg-green-50 border border-green-200 rounded-lg text-center">
+                <p className="text-sm text-green-800">
+                  This number is already paired and registered with WhatsApp Web.
+                </p>
+              </div>
+              <Button 
+                variant="outline" 
+                className="w-full"
+                onClick={() => {
+                  setPairingStatus(null);
+                  setPhoneNumber("");
+                }}
+                data-testid="button-pair-different"
+              >
+                Pair Different Number
+              </Button>
+            </div>
+          ) : !isCodeGenerated ? (
             <Button 
               type="submit" 
               className="w-full" 
@@ -135,6 +230,7 @@ export default function PairingForm({ onPair, isLoading = false }: PairingFormPr
                   setIsCodeGenerated(false);
                   setPairingCode("");
                   setPhoneNumber("");
+                  setPairingStatus(null);
                 }}
                 data-testid="button-generate-new"
               >
