@@ -1,3 +1,4 @@
+
 import PairingForm from "@/components/PairingForm";
 import SessionCard from "@/components/SessionCard";
 import BlockedUsersList from "@/components/BlockedUsersList";
@@ -6,15 +7,22 @@ import ApiStatus from "@/components/ApiStatus";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Bot, Users, Shield, Settings, RefreshCw, Loader2 } from "lucide-react";
+import { Bot, Users, Shield, Settings, RefreshCw, Loader2, Sparkles, Zap } from "lucide-react";
 import { Link } from "wouter";
 import { useSessions, useBlocklist, usePairNumber } from "@/hooks/useApi";
+import { useEffect, useState } from "react";
 
 export default function Dashboard() {
   // Use real API hooks
   const { data: sessions = [], isLoading: sessionsLoading, refetch: refetchSessions } = useSessions();
   const { data: blockedUsers = [], isLoading: blocklistLoading } = useBlocklist();
   const pairNumberMutation = usePairNumber();
+
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handlePair = (phoneNumber: string) => {
     pairNumberMutation.mutate(phoneNumber);
@@ -28,36 +36,49 @@ export default function Dashboard() {
   const pairingCount = sessions.filter(s => s.status === "pairing").length;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen gradient-bg">
+      {/* Animated Background Elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute top-3/4 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-indigo-500/5 rounded-full blur-3xl animate-bounce-gentle"></div>
+      </div>
+
       {/* Header */}
-      <header className="border-b bg-card">
+      <header className="relative z-10 glass-effect border-b border-white/10">
         <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
+          <div className={`flex items-center justify-between ${mounted ? 'animate-fade-in-up' : 'opacity-0'}`}>
             <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <Bot className="w-5 h-5 text-primary-foreground" />
+              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg animate-bounce-gentle">
+                <Bot className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-xl font-semibold" data-testid="title-dashboard">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent" data-testid="title-dashboard">
                   WhatsApp Bot Dashboard
                 </h1>
-                <p className="text-sm text-muted-foreground">Manage your bot connections</p>
+                <p className="text-sm text-white/70">Manage your bot connections with style</p>
               </div>
+              <Sparkles className="w-5 h-5 text-yellow-400 animate-pulse" />
             </div>
             
-            <div className="flex items-center space-x-2">
+            <div className={`flex items-center space-x-2 ${mounted ? 'animate-fade-in-left stagger-2' : 'opacity-0'}`}>
               <Button
                 variant="outline"
                 onClick={handleRefresh}
                 disabled={sessionsLoading}
                 data-testid="button-refresh"
+                className="glass-effect hover-lift border-white/20 text-white hover:bg-white/10 transition-all duration-300"
               >
                 <RefreshCw className={`w-4 h-4 mr-2 ${sessionsLoading ? 'animate-spin' : ''}`} />
                 Refresh
               </Button>
               
               <Link href="/admin">
-                <Button variant="outline" data-testid="link-admin">
+                <Button 
+                  variant="outline" 
+                  data-testid="link-admin"
+                  className="glass-effect hover-lift border-white/20 text-white hover:bg-white/10 transition-all duration-300"
+                >
                   <Settings className="w-4 h-4 mr-2" />
                   Admin Panel
                 </Button>
@@ -69,48 +90,59 @@ export default function Dashboard() {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="relative z-10 container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left Column - Pairing & Stats */}
-          <div className="space-y-6">
+          <div className={`space-y-6 ${mounted ? 'animate-fade-in-left stagger-1' : 'opacity-0'}`}>
             {/* API Status */}
-            <ApiStatus />
+            <div className="glass-card rounded-2xl p-1 hover-lift transition-all duration-300">
+              <ApiStatus />
+            </div>
             
-            {/* Pairing Form */}
-            <PairingForm onPair={handlePair} isLoading={pairNumberMutation.isPending} />
+            {/* Enhanced Pairing Form */}
+            <div className="glass-card rounded-2xl p-6 hover-lift transition-all duration-300">
+              <div className="flex items-center mb-4">
+                <Zap className="w-5 h-5 text-yellow-400 mr-2 animate-pulse" />
+                <h3 className="text-lg font-semibold text-white">Quick Pair</h3>
+              </div>
+              <PairingForm onPair={handlePair} isLoading={pairNumberMutation.isPending} />
+            </div>
             
-            {/* Quick Stats */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Quick Stats</CardTitle>
+            {/* Quick Stats with Glass Effect */}
+            <Card className="glass-card rounded-2xl border-0 hover-lift transition-all duration-300">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg text-white flex items-center">
+                  <Shield className="w-5 h-5 mr-2 text-purple-400" />
+                  Quick Stats
+                </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-3 glass-effect rounded-xl">
                   <div className="flex items-center space-x-2">
-                    <Users className="w-4 h-4 text-green-600" />
-                    <span className="text-sm">Connected</span>
+                    <Users className="w-4 h-4 text-green-400" />
+                    <span className="text-sm text-white/90">Connected</span>
                   </div>
-                  <Badge variant="secondary" data-testid="badge-connected-count">
+                  <Badge variant="secondary" className="bg-green-500/20 text-green-300 border-green-500/30 animate-pulse-slow" data-testid="badge-connected-count">
                     {connectedCount}
                   </Badge>
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-3 glass-effect rounded-xl">
                   <div className="flex items-center space-x-2">
-                    <RefreshCw className="w-4 h-4 text-yellow-600" />
-                    <span className="text-sm">Pairing</span>
+                    <RefreshCw className="w-4 h-4 text-yellow-400 animate-spin" />
+                    <span className="text-sm text-white/90">Pairing</span>
                   </div>
-                  <Badge variant="secondary" data-testid="badge-pairing-count">
+                  <Badge variant="secondary" className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30" data-testid="badge-pairing-count">
                     {pairingCount}
                   </Badge>
                 </div>
                 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between p-3 glass-effect rounded-xl">
                   <div className="flex items-center space-x-2">
-                    <Shield className="w-4 h-4 text-red-600" />
-                    <span className="text-sm">Blocked</span>
+                    <Shield className="w-4 h-4 text-red-400" />
+                    <span className="text-sm text-white/90">Blocked</span>
                   </div>
-                  <Badge variant="destructive" data-testid="badge-blocked-count">
+                  <Badge variant="destructive" className="bg-red-500/20 text-red-300 border-red-500/30" data-testid="badge-blocked-count">
                     {blockedUsers.length}
                   </Badge>
                 </div>
@@ -119,36 +151,47 @@ export default function Dashboard() {
           </div>
 
           {/* Middle Column - Active Sessions */}
-          <div className="space-y-6">
+          <div className={`space-y-6 ${mounted ? 'animate-fade-in-up stagger-2' : 'opacity-0'}`}>
             <div>
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-lg font-semibold">Active Sessions</h2>
-                <Badge variant="outline" data-testid="badge-total-sessions">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-white flex items-center">
+                  <Bot className="w-6 h-6 mr-3 text-blue-400 animate-bounce-gentle" />
+                  Active Sessions
+                </h2>
+                <Badge variant="outline" className="glass-effect border-white/20 text-white animate-shimmer" data-testid="badge-total-sessions">
                   {sessions.length} total
                 </Badge>
               </div>
               
               {sessionsLoading ? (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <Loader2 className="w-8 h-8 text-muted-foreground mx-auto mb-4 animate-spin" />
-                    <CardDescription>Loading sessions...</CardDescription>
+                <Card className="glass-card rounded-2xl border-0">
+                  <CardContent className="text-center py-12">
+                    <Loader2 className="w-12 h-12 text-purple-400 mx-auto mb-4 animate-spin" />
+                    <CardDescription className="text-white/70 text-lg">Loading sessions...</CardDescription>
                   </CardContent>
                 </Card>
               ) : sessions.length === 0 ? (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <Bot className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                    <CardTitle className="text-lg mb-2">No Active Sessions</CardTitle>
-                    <CardDescription>
+                <Card className="glass-card rounded-2xl border-0">
+                  <CardContent className="text-center py-12">
+                    <Bot className="w-16 h-16 text-purple-400 mx-auto mb-4 animate-float" />
+                    <CardTitle className="text-xl mb-3 text-white">No Active Sessions</CardTitle>
+                    <CardDescription className="text-white/70 text-lg">
                       Pair your first WhatsApp number to get started
                     </CardDescription>
                   </CardContent>
                 </Card>
               ) : (
                 <div className="space-y-4">
-                  {sessions.map((session) => (
-                    <SessionCard key={session.id} session={session} isAdmin={false} />
+                  {sessions.map((session, index) => (
+                    <div 
+                      key={session.id} 
+                      className={`hover-lift transition-all duration-300 ${mounted ? `animate-fade-in-up stagger-${Math.min(index + 1, 6)}` : 'opacity-0'}`}
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                    >
+                      <div className="glass-card rounded-xl p-1">
+                        <SessionCard session={session} isAdmin={false} />
+                      </div>
+                    </div>
                   ))}
                 </div>
               )}
@@ -156,18 +199,23 @@ export default function Dashboard() {
           </div>
 
           {/* Right Column - Blocked Users */}
-          <div className="space-y-6">
+          <div className={`space-y-6 ${mounted ? 'animate-fade-in-right stagger-3' : 'opacity-0'}`}>
             <div>
-              <h2 className="text-lg font-semibold mb-4">Blocked Users</h2>
+              <h2 className="text-xl font-bold text-white mb-6 flex items-center">
+                <Shield className="w-6 h-6 mr-3 text-red-400 animate-pulse" />
+                Blocked Users
+              </h2>
               {blocklistLoading ? (
-                <Card>
-                  <CardContent className="text-center py-8">
-                    <Loader2 className="w-8 h-8 text-muted-foreground mx-auto mb-4 animate-spin" />
-                    <CardDescription>Loading blocked users...</CardDescription>
+                <Card className="glass-card rounded-2xl border-0">
+                  <CardContent className="text-center py-12">
+                    <Loader2 className="w-12 h-12 text-red-400 mx-auto mb-4 animate-spin" />
+                    <CardDescription className="text-white/70 text-lg">Loading blocked users...</CardDescription>
                   </CardContent>
                 </Card>
               ) : (
-                <BlockedUsersList blockedUsers={blockedUsers} isAdmin={false} />
+                <div className="glass-card rounded-2xl p-1 hover-lift transition-all duration-300">
+                  <BlockedUsersList blockedUsers={blockedUsers} isAdmin={false} />
+                </div>
               )}
             </div>
           </div>
